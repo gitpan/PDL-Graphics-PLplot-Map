@@ -1,0 +1,33 @@
+###    #
+###    ## Determine which lat/lon pairs are on the other side of the Earth from lat0/lon0
+###    #
+###
+###    my $pi   = 3.141592653589793238;
+###    my ($a, $b) = (6378.1363, 6356.7516);	# equatorial, polar Earth radii
+###    my $r       = ($a+$b)/2; # average Earth radius (use spherical approximate projections)
+###
+###    my $lat  = $lonlineslats * ($pi/180);
+###    my $clon = $lonlines     * ($pi/180);
+###    my $lon0 = PDL->ones($lonlines->nelem) * ($o[0] * ($pi/180));
+###    my $lat0 = PDL->ones($lonlines->nelem) * ($o[1] * ($pi/180));
+###
+###    # Simple conversion of lat/lon to ECF XYZ (assume height = 0)
+###    my $x = $r*cos($lat)*cos($clon);
+###    my $y = $r*cos($lat)*sin($clon);
+###    my $z = $r*sin($lat);
+###    my $mag = sqrt($x**2 + $y**2 + $z**2);
+###    my $p = (cat($x, $y, $z)/$mag)->xchg(0,1);  # ECF position on surface of Earth
+###
+###    # Same thing for center point
+###    my $x0 = $r*cos($lat0)*cos($lon0);
+###    my $y0 = $r*cos($lat0)*sin($lon0);
+###    my $z0 = $r*sin($lat0);
+###    my $mag0 = sqrt($x0**2 + $y0**2 + $z0**2);
+###    my $p0 = (cat($x0, $y0, $z0)/$mag0)->xchg(0,1);
+###
+###    # cosine of angle between center point and lat/lon points to plot
+###    my $dotprod=($p*$p0)->sumover;
+###    my $m1 = (acos($dotprod) <= ($pi/2)); 
+###
+###    $lonlines     = $lonlines->where($m1 + !$lonlines->isfinite);
+###    $lonlineslats = $lonlineslats->where($m1 + !$lonlineslats->isfinite);
