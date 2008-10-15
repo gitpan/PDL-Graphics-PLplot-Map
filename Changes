@@ -9,6 +9,10 @@ Revision history for PDL::Graphics::Map:
 0.07  8/01/2005
         - Added  #include "XSUB.h" to pscoast.c.  Apparently newer perls (5.8.7)
           need this to find 'my_perl' symbol.
+0.09  7/24/2008
+        - Fix river plotting
+0.10  10/15/2008
+        - Add better prerequisite handling if PDL is not installed
 
 
 

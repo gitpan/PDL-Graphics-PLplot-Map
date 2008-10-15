@@ -6,7 +6,7 @@ use lib qw(./blib/lib ./blib/arch);
 # Change 1..1 below to 1..last_test_to_print .
 # (It may become useful if the test is moved to ./t subdirectory.)
 
-BEGIN { $| = 1; print "1..11\n"; }
+BEGIN { $| = 1; print "1..13\n"; }
 END {print "not ok 1\n" unless $loaded;}
 use PDL;
 use PDL::Graphics::PLplot::Map;
@@ -114,6 +114,29 @@ $pl->map_plot (pdl(-170, -160), pdl(80, 90), PLOTTYPE => 'LINE',
 
 $pl->close;
 ok -s "test11.png" > 0, 11;
+
+
+# lat lines messed up
+my $pl = PDL::Graphics::PLplot::Map->new (DEV => "png", FILE => "test12.png");
+$pl->worldmap (PROJECTION => 'AZEQDIST', # Azimuthal Equidistant projection
+               CENTER  => [0, 90],
+               RADIUS  => 5000,          # 3000 kilometer minimum radius
+	       RESOLUTION => 'low',
+	       LATGRID => 15);           # latitude grid lines every 10 degrees
+
+$pl->close;
+ok -s "test12.png" > 0, 12;
+
+# lon lines messed up
+my $pl = PDL::Graphics::PLplot::Map->new (DEV => "png", FILE => "test13.png");
+$pl->worldmap (PROJECTION => 'AZEQDIST', # Azimuthal Equidistant projection
+               CENTER  => [0, 90],
+               RADIUS  => 5000,          # 3000 kilometer minimum radius
+	       RESOLUTION => 'low',
+	       LONGRID => 30);           # latitude grid lines every 10 degrees
+
+$pl->close;
+ok -s "test13.png" > 0, 13;
 
 
 

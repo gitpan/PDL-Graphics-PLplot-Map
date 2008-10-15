@@ -4,8 +4,8 @@ pp_add_isa('PDL::Graphics::PLplot');
 
 pp_addpm({At => Top}, <<'EOD');
 
-$VERSION = '0.07'; # these versions must match!
-BEGIN { $VERSION = '0.07'; };  # put this is so it does not use version inherited from PDL::Graphics::PLplot!
+$VERSION = '0.10'; # these versions must match!
+BEGIN { $VERSION = '0.10'; };  # put this is so it does not use version inherited from PDL::Graphics::PLplot!
 
 =head1 NAME 
 
@@ -430,6 +430,9 @@ sub worldmap {
   my $box = [$minlon, $maxlon, $minlat, $maxlat];
   my ($lonmap, $latmap) = fetch(%parms, BOUNDARIES => $boundaries, RESOLUTION => $resolution, MAPBOX => $box);
 
+  $lonmap->where($lonmap > 180) -= 360; # normalize to -180 to 180 longitudes D. Hunt 7/24/2008
+  delete $parms{RIVER_DETAIL}; # prevent error in xyplot later on. D. Hunt 7/24/2008
+
   # project map lon/lat -> x/y
   my ($xmap, $ymap) = &{$projection{$proj}}($lonmap, $latmap, @o);
 
@@ -516,6 +519,7 @@ sub worldmap {
 
     # compute latitude lines for map
     my $latlines     =  ((sequence(180/$latgrid)*$latgrid)-90);
+    $latlines = $latlines->where(abs($latlines) != 90); # get rid of poles
     my $nlatlines = $latlines->nelem;
     $latlines     = $latlines->dummy(0,$n+1)->append(zeroes(1)/0)->clump(2);  # put in NaNs in to separate lines
 
@@ -529,9 +533,11 @@ sub worldmap {
     $latlines->inplace->setnantobad;
     $latlineslons->inplace->setnantobad;
 
+    # This seems bogus and gets rid of BAD values which delimit separate sections.
     # get rid of lines off map
     my $d = $bxy[1] - $bxy[0];
-    my $m = ($latlineslons >= ($bxy[0] - 2*$d) * ($latlineslons <= ($bxy[1] + 2*$d))); # mask of all lon values within box 
+    my $m = ($latlineslons >= ($bxy[0] - 2*$d) * ($latlineslons <= ($bxy[1] + 2*$d))); # mask of all lon values within box
+    $m->inplace->setbadtoval(1);  # include bad values
     $latlines     = $latlines->where($m);
     $latlineslons = $latlineslons->where($m);
 
